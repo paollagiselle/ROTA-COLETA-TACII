@@ -10,6 +10,7 @@ import {
 import CheckboxPontos from "../src/CheckboxPontos";
 import Resultado from "../src/Resultado";
 import SelectInicio from "../src/SelectInicio";
+import TiposResiduos from "../src/TiposResiduos";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -84,6 +85,10 @@ export default function App() {
             setEtapas([]);
           }}
         />
+
+          <TiposResiduos 
+          onChange={(tiposSelecionados) => console.log(tiposSelecionados)} 
+          />
 
         <CheckboxPontos
           pontos={pontos}
