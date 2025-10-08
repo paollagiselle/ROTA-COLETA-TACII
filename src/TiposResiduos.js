@@ -28,7 +28,7 @@ export default function TiposResiduos({ onChange }) {
           onValueChange={() => handleChange("organico")}
           color={tipos.organico ? "#27ae60" : undefined}
         />
-        <Text style={[styles.label, isDark && styles.labelDark]}>🌿 Orgânico</Text>
+        <Text style={[styles.label, isDark && styles.labelDark]}>Orgânico</Text>
       </View>
 
       <View style={styles.option}>
@@ -37,7 +37,7 @@ export default function TiposResiduos({ onChange }) {
           onValueChange={() => handleChange("reciclavel")}
           color={tipos.reciclavel ? "#f1c40f" : undefined}
         />
-        <Text style={[styles.label, isDark && styles.labelDark]}>♻️ Reciclável</Text>
+        <Text style={[styles.label, isDark && styles.labelDark]}>Reciclável</Text>
       </View>
 
       <View style={styles.option}>
@@ -46,7 +46,7 @@ export default function TiposResiduos({ onChange }) {
           onValueChange={() => handleChange("eletronico")}
           color={tipos.eletronico ? "#3498db" : undefined}
         />
-        <Text style={[styles.label, isDark && styles.labelDark]}>💻 Eletrônico</Text>
+        <Text style={[styles.label, isDark && styles.labelDark]}>Eletrônico</Text>
       </View>
     </View>
   );

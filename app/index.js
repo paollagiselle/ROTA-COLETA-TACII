@@ -63,7 +63,7 @@ export default function App() {
       <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.header}>
           <Text style={[styles.title, { color: tema.text }]}>
-            🚛 Rota de Coleta de Lixo
+            Rota de Coleta de Lixo
           </Text>
 
           <Pressable onPress={() => setDarkMode(!darkMode)}>
