@@ -87,6 +87,7 @@ export default function App() {
         />
 
           <TiposResiduos 
+          isDarkMode={darkMode}
           onChange={(tiposSelecionados) => console.log(tiposSelecionados)} 
           />
 
