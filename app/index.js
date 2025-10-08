@@ -1,12 +1,20 @@
 import React, { useState } from "react";
-import { Pressable, SafeAreaView, ScrollView, StyleSheet, Text } from "react-native";
+import {
+  Pressable,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import CheckboxPontos from "../src/CheckboxPontos";
 import Resultado from "../src/Resultado";
 import SelectInicio from "../src/SelectInicio";
+import { LinearGradient } from "expo-linear-gradient";
+import { Ionicons } from "@expo/vector-icons";
 
 export default function App() {
   const pontos = ["A", "B", "C", "D", "E"];
-
   const distancias = {
     A: { B: 4, C: 7, D: 3, E: 6 },
     B: { A: 4, C: 2, D: 5, E: 8 },
@@ -16,9 +24,10 @@ export default function App() {
   };
 
   const [inicio, setInicio] = useState("A");
-  const [selecionados, setSelecionados] = useState([]); // pontos escolhidos
+  const [selecionados, setSelecionados] = useState([]);
   const [total, setTotal] = useState(0);
   const [etapas, setEtapas] = useState([]);
+  const [darkMode, setDarkMode] = useState(false);
 
   const marcarPonto = (ponto) => {
     setSelecionados((prev) => {
@@ -46,10 +55,24 @@ export default function App() {
     setEtapas(etapasTemp);
   };
 
+  const tema = darkMode ? dark : light;
+
   return (
-    <SafeAreaView style={styles.safe}>
+    <SafeAreaView style={[styles.safe, { backgroundColor: tema.bg }]}>
       <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.title}>Rota de Coleta de Lixo</Text>
+        <View style={styles.header}>
+          <Text style={[styles.title, { color: tema.text }]}>
+            🚛 Rota de Coleta de Lixo
+          </Text>
+
+          <Pressable onPress={() => setDarkMode(!darkMode)}>
+            <Ionicons
+              name={darkMode ? "moon" : "sunny"}
+              size={26}
+              color={tema.icon}
+            />
+          </Pressable>
+        </View>
 
         <SelectInicio
           pontos={pontos}
@@ -69,8 +92,15 @@ export default function App() {
           marcarPonto={marcarPonto}
         />
 
-        <Pressable style={styles.btn} onPress={calcular}>
-          <Text style={styles.btnText}>Calcular Rota</Text>
+        <Pressable onPress={calcular} style={{ width: "100%", marginTop: 10 }}>
+          <LinearGradient
+            colors={["#0097e6", "#00c6ff"]}
+            style={styles.btn}
+            start={[0, 0]}
+            end={[1, 1]}
+          >
+            <Text style={styles.btnText}>Calcular Rota</Text>
+          </LinearGradient>
         </Pressable>
 
         <Resultado etapas={etapas} total={total} />
@@ -79,19 +109,43 @@ export default function App() {
   );
 }
 
+const light = {
+  bg: "#f5f6fa",
+  text: "#2f3640",
+  icon: "#0097e6",
+};
+
+const dark = {
+  bg: "#1e272e",
+  text: "#f5f6fa",
+  icon: "#ffd32a",
+};
+
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: "#f5f6fa" },
-  container: {
-    padding: 20,
+  safe: { flex: 1 },
+  container: { padding: 20, alignItems: "center" },
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
     alignItems: "center",
+    width: "100%",
+    marginBottom: 16,
   },
-  title: { fontSize: 20, fontWeight: "700", marginBottom: 12, color: "#2f3640" },
+  title: { fontSize: 20, fontWeight: "700" },
   btn: {
-    backgroundColor: "#0097e6",
-    paddingVertical: 12,
-    paddingHorizontal: 20,
+    paddingVertical: 14,
     borderRadius: 12,
-    marginTop: 10,
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#000",
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    elevation: 3,
   },
-  btnText: { color: "#fff", fontSize: 16, fontWeight: "600" },
+  btnText: {
+    color: "#fff",
+    fontSize: 17,
+    fontWeight: "700",
+    letterSpacing: 0.5,
+  },
 });
