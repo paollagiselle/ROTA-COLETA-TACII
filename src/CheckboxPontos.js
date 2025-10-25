@@ -2,12 +2,22 @@ import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 export default function CheckboxPontos({ pontos, inicio, selecionados, marcarPonto }) {
+  // Se o array de pontos estiver vazio, mostramos uma mensagem informativa
+  if (pontos.length === 0) {
+    return (
+        <View style={styles.card}>
+             <Text style={styles.label}>Selecione os pontos da rota:</Text>
+             <Text style={styles.infoText}>Nenhum ponto de coleta atende aos tipos de resíduos selecionados.</Text>
+        </View>
+    );
+  }
+
   return (
     <View style={styles.card}>
       <Text style={styles.label}>Selecione os pontos da rota:</Text>
       {pontos.map(
         (p) =>
-          p !== inicio && (
+          (
             <Pressable
               key={p}
               style={styles.checkboxRow}
@@ -33,6 +43,14 @@ const styles = StyleSheet.create({
     marginVertical: 10,
   },
   label: { marginBottom: 8, fontWeight: "600", color: "#2f3640" },
+  infoText: { 
+    color: '#e65100', 
+    padding: 8,
+    backgroundColor: '#fff3e0',
+    borderRadius: 8,
+    textAlign: 'center',
+    marginTop: 5,
+  },
   checkboxRow: {
     flexDirection: "row",
     alignItems: "center",

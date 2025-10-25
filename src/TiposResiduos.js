@@ -15,7 +15,6 @@ export default function TiposResiduos({ onChange, isDarkMode }) {
     onChange && onChange(novosTipos);
   };
 
-  // Escolhe o tema de acordo com o modo escuro do app principal
   const tema = isDarkMode ? darkTheme : lightTheme;
 
   return (
@@ -28,7 +27,7 @@ export default function TiposResiduos({ onChange, isDarkMode }) {
           onValueChange={() => handleChange("organico")}
           color={tipos.organico ? "#27ae60" : tema.checkbox}
         />
-        <Text style={[styles.label, { color: tema.text }]}>🌿 Orgânico</Text>
+        <Text style={[styles.label, { color: tema.text }]}>Orgânico</Text>
       </View>
 
       <View style={styles.option}>
@@ -37,7 +36,7 @@ export default function TiposResiduos({ onChange, isDarkMode }) {
           onValueChange={() => handleChange("reciclavel")}
           color={tipos.reciclavel ? "#f1c40f" : tema.checkbox}
         />
-        <Text style={[styles.label, { color: tema.text }]}>♻️ Reciclável</Text>
+        <Text style={[styles.label, { color: tema.text }]}>Reciclável</Text>
       </View>
 
       <View style={styles.option}>
@@ -46,7 +45,7 @@ export default function TiposResiduos({ onChange, isDarkMode }) {
           onValueChange={() => handleChange("eletronico")}
           color={tipos.eletronico ? "#3498db" : tema.checkbox}
         />
-        <Text style={[styles.label, { color: tema.text }]}>💻 Eletrônico</Text>
+        <Text style={[styles.label, { color: tema.text }]}>Eletrônico</Text>
       </View>
     </View>
   );
