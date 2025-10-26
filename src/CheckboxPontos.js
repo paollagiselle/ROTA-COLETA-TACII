@@ -1,20 +1,23 @@
 import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-export default function CheckboxPontos({ pontos, inicio, selecionados, marcarPonto }) {
+export default function CheckboxPontos({ pontos, inicio, selecionados, marcarPonto, isDarkMode }) {
   // Se o array de pontos estiver vazio, mostramos uma mensagem informativa
   if (pontos.length === 0) {
     return (
-        <View style={styles.card}>
-             <Text style={styles.label}>Selecione os pontos da rota:</Text>
-             <Text style={styles.infoText}>Nenhum ponto de coleta atende aos tipos de resíduos selecionados.</Text>
+        <View style={[styles.card, { backgroundColor: tema.bg }]}>
+             <Text style={[styles.label, { color: tema.text }]}>Selecione os pontos da rota:</Text>
+             <Text style={[styles.infoText, {backgroundColor: isDarkMode ? "#3d3d3d" : "#fff3e0",color: isDarkMode ? "#fcbf49" : "#e65100",},]}>Nenhum ponto de coleta atende aos tipos de resíduos selecionados.</Text>
         </View>
     );
   }
 
+   const tema = isDarkMode ? darkTheme : lightTheme;
+
   return (
-    <View style={styles.card}>
-      <Text style={styles.label}>Selecione os pontos da rota:</Text>
+    <View style={[styles.card, { backgroundColor: tema.bg }]}>
+      <Text style={[styles.title, { color: tema.text }]}>Selecione os pontos da rota:</Text>
+      
       {pontos.map(
         (p) =>
           (
@@ -23,16 +26,32 @@ export default function CheckboxPontos({ pontos, inicio, selecionados, marcarPon
               style={styles.checkboxRow}
               onPress={() => marcarPonto(p)}
             >
-              <View style={[styles.box, selecionados.includes(p) && styles.boxChecked]}>
-                {selecionados.includes(p) && <Text style={styles.checkMark}>✓</Text>}
+              <View style={[styles.box, {backgroundColor: selecionados.includes(p) ? '#0097e6' : tema.bgBox,
+                borderColor: selecionados.includes(p) ? '#0097e6' : tema.checkbox, }, ]} >
+
+              {selecionados.includes(p) && <Text style={styles.checkMark}>✓</Text>}
               </View>
-              <Text style={styles.ptText}>{p}</Text>
+
+              <Text style={[styles.ptText, { color: selecionados.includes(p) ? "#0097e6" : tema.text },]}>{p}</Text>
             </Pressable>
           )
       )}
     </View>
   );
 }
+
+// Temas separados para modo claro e escuro
+const lightTheme = {
+  bg: "#f9f9f9",
+  text: "#2f3640",
+  checkbox: "#2f3640",
+};
+
+const darkTheme = {
+  bg: "#2f3640",
+  text: "#f5f6fa",
+  checkbox: "#f5f6fa",
+};
 
 const styles = StyleSheet.create({
   card: {

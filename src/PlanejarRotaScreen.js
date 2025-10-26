@@ -89,6 +89,7 @@ export default function PlanejarRotaScreen() {
     if (selecionados.length === 0) {
         setTotal(0);
         setEtapas([]);
+        navigation.navigate("Ofertas", { filtros: tiposSelecionados });
         return;
     }
 
@@ -156,6 +157,7 @@ export default function PlanejarRotaScreen() {
         <SelectInicio
           pontos={pontos}
           inicio={inicio}
+          isDarkMode={darkMode}
           setInicio={(v) => {
             setInicio(v);
             setSelecionados([]);
@@ -178,6 +180,7 @@ export default function PlanejarRotaScreen() {
           inicio={inicio}
           selecionados={selecionados}
           marcarPonto={marcarPonto}
+          isDarkMode={darkMode}
         />
 
         <Pressable onPress={calcular} style={{ width: "100%", marginTop: 10 }}>

@@ -2,16 +2,19 @@ import React from "react";
 import { StyleSheet, Text, View } from "react-native";
 import RNPickerSelect from "react-native-picker-select";
 
-export default function SelectInicio({ pontos, inicio, setInicio }) {
+export default function SelectInicio({ pontos, inicio, setInicio, isDarkMode }) {
   const placeholder = {
     label: 'Selecione um ponto de partida...',
     value: null,
     color: '#9EA0A4', 
   };
 
+  const tema = isDarkMode ? darkTheme : lightTheme;
+
   return (
-    <View style={styles.card}>
-      <Text style={styles.label}>Ponto de Partida:</Text>
+    <View style={[styles.card, { backgroundColor: tema.bg }]}>
+      <Text style={[styles.title, { color: tema.text }]}>Ponto de Partida:</Text>
+      
       <RNPickerSelect
         onValueChange={(value) => {
           console.log('Valor selecionado:', value); 
@@ -20,13 +23,50 @@ export default function SelectInicio({ pontos, inicio, setInicio }) {
         items={pontos.map((p) => ({ label: p, value: p, key: p }))}
         value={inicio} 
         placeholder={inicio ? undefined : placeholder} 
-        style={pickerSelectStyles}
+
+        style={{
+          ...pickerSelectStyles,
+          inputIOS: {
+            ...pickerSelectStyles.inputIOS,
+            backgroundColor: tema.inputBg,
+            color: tema.text,
+            borderColor: tema.border,
+          },
+          inputAndroid: {
+            ...pickerSelectStyles.inputAndroid,
+            backgroundColor: tema.inputBg,
+            color: tema.text,
+            borderColor: tema.border,
+          },
+          placeholder: {
+            ...pickerSelectStyles.placeholder,
+            color: tema.placeholder,
+          },
+          viewContainer: {
+            ...pickerSelectStyles.viewContainer,
+            backgroundColor: tema.inputBg,
+          },
+        }}
+
         useNativeAndroidPickerStyle={false} 
         fixAndroidTouchableBug={true} 
       />
     </View>
   );
 }
+
+// Temas separados para modo claro e escuro
+const lightTheme = {
+  bg: "#f9f9f9",
+  text: "#2f3640",
+  checkbox: "#2f3640",
+};
+
+const darkTheme = {
+  bg: "#2f3640",
+  text: "#f5f6fa",
+  checkbox: "#f5f6fa",
+};
 
 const styles = StyleSheet.create({
   card: {
