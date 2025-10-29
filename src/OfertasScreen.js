@@ -30,13 +30,13 @@ export default function OfertasScreen() {
 
   const OfertaItem = ({ item }) => (
     <View style={[styles.itemCard, { backgroundColor: tema.card }]}>
-      <View style={[styles.pontoTag, { backgroundColor: tipoCor[item.tipo] || '#95a5a6' }]}>
+      <View style={[styles.pontoTag, { backgroundColor: tipoCor[item.tipo] || '#95a5a6' }]}>  {/*tag lateral da cor escolhida*/}
         <Text style={styles.pontoText}>{item.ponto}</Text>
       </View>
       <View style={styles.details}>
-        <Text style={[styles.typeText, { color: tema.text }]}>{item.tipo} - {item.user}</Text>
+        <Text style={[styles.typeText, { color: tema.text }]}>{item.tipo} - {item.user}</Text> {/* tipo e nome do usuário */}
         <Text style={[styles.quantityText, { color: tema.subtext }]}>
-          <Text style={{ fontWeight: 'bold' }}>{item.quantidade}</Text> kg
+          <Text style={{ fontWeight: 'bold' }}>{item.quantidade}</Text> kg {/* qtde de lixo */}
         </Text>
       </View>
     </View>
@@ -62,6 +62,8 @@ export default function OfertasScreen() {
         </Pressable>
       </View>
 
+      {/*Exibe a lista de cartões
+      para cada item do array OfertasData, chama o componente OfertaItem*/}
       <FlatList
         data={ofertasData}
         keyExtractor={(item) => item.id}
