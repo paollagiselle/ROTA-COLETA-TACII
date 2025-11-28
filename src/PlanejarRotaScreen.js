@@ -6,6 +6,8 @@ import {
   StyleSheet,
   Text,
   View,
+  ActivityIndicator, 
+  Alert 
 } from "react-native";
 import CheckboxPontos from "./CheckboxPontos";
 import Resultado from "./Resultado";
@@ -13,25 +15,79 @@ import SelectInicio from "./SelectInicio";
 import TiposResiduos from "./TiposResiduos";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
+import { PONTOS_MAPA_RESIDUOS } from "./constants/data"; 
+import { supabase } from './supabase'; 
+import AsyncStorage from '@react-native-async-storage/async-storage'; // NOVO IMPORT
+
+// Chave para salvar o plano de rota
+const ASYNC_STORAGE_ROUTE_KEY = '@rotaOtimizadaPlano'; 
 
 export default function PlanejarRotaScreen() {
   const pontos = ["A", "B", "C", "D", "E"];
-  const distancias = {
-    A: { B: 4, C: 7, D: 3, E: 6 },
-    B: { A: 4, C: 2, D: 5, E: 8 },
-    C: { A: 7, B: 2, D: 6, E: 3 },
-    D: { A: 3, B: 5, C: 6, E: 4 },
-    E: { A: 6, B: 8, C: 3, D: 4 },
-  };
+  
+  const [distancias, setDistancias] = useState({});
+  const [loadingDist, setLoadingDist] = useState(true); 
+  const [mapaResiduos, setMapaResiduos] = useState({}); 
+  const [loadingMap, setLoadingMap] = useState(true); 
 
-  // Mapeamento dos tipos de resíduos por ponto
-  const mapeamentoResiduos = {
-    A: ['eletronico','organico'],
-    B: ['organico', 'reciclavel'],
-    C: ['reciclavel', 'eletronico'],
-    D: ['organico'],
-    E: ['reciclavel'],
-  };
+  // EFEITO PARA CARREGAR AS DISTÂNCIAS DO SUPABASE
+  useEffect(() => {
+    async function fetchDistancias() {
+        try {
+            const { data, error } = await supabase
+                .from('distancias_pontos')
+                .select('*');
+
+            if (error) throw error;
+
+            const matriz = {};
+            data.forEach(item => {
+                if (!matriz[item.ponto_a]) {
+                    matriz[item.ponto_a] = {};
+                }
+                matriz[item.ponto_a][item.ponto_b] = item.distancia_km;
+            });
+
+            setDistancias(matriz);
+        } catch (error) {
+            console.error('Erro ao carregar distâncias:', error.message);
+            Alert.alert("Erro de Conexão", "Não foi possível carregar a matriz de distâncias.");
+        } finally {
+            setLoadingDist(false);
+        }
+    }
+    fetchDistancias();
+  }, []); 
+
+  // EFEITO PARA CARREGAR O MAPA DE RESÍDUOS DO SUPABASE
+  useEffect(() => {
+    async function fetchMapaResiduos() {
+        try {
+            const { data, error } = await supabase
+                .from('pontos_residuos')
+                .select('*');
+
+            if (error) throw error;
+
+            const mapa = {};
+            data.forEach(item => {
+                if (!mapa[item.ponto]) {
+                    mapa[item.ponto] = [];
+                }
+                mapa[item.ponto].push(item.tipo_residuo);
+            });
+
+            setMapaResiduos(mapa);
+        } catch (error) {
+            console.error('Erro ao carregar mapa de resíduos:', error.message);
+            Alert.alert("Erro de Conexão", "Não foi possível carregar o mapa de resíduos.");
+        } finally {
+            setLoadingMap(false);
+        }
+    }
+    fetchMapaResiduos();
+  }, []); 
+
 
   const [inicio, setInicio] = useState("A");
   const [selecionados, setSelecionados] = useState([]);
@@ -44,7 +100,20 @@ export default function PlanejarRotaScreen() {
   const [etapas, setEtapas] = useState([]);
   const [darkMode, setDarkMode] = useState(false);
 
+  // FUNÇÃO DE SALVAMENTO NO ASYNCSTORAGE
+  const salvarPlanoDeRota = async (rota) => {
+    try {
+        const rotaJson = JSON.stringify(rota);
+        await AsyncStorage.setItem(ASYNC_STORAGE_ROUTE_KEY, rotaJson);
+        // Reseta o índice de execução sempre que um novo plano é calculado
+        await AsyncStorage.setItem('@rotaIndexAtual', '0'); 
+    } catch (e) {
+        console.error("Erro ao salvar plano:", e);
+    }
+  };
 
+
+  // Lógica de Filtragem de Pontos de Destino 
   const pontosFiltradosPorResiduo = pontos.filter(ponto => {
     if (ponto === 'A') return false; 
     
@@ -53,12 +122,10 @@ export default function PlanejarRotaScreen() {
         return true; 
     }
 
-    // Verifica se o ponto coleta pelo menos um dos tipos de resíduos marcados.
-    const tiposDoPonto = mapeamentoResiduos[ponto] || [];
+    const tiposDoPonto = mapaResiduos[ponto] || [];
     return tiposMarcados.some(tipo => tiposDoPonto.includes(tipo));
   });
 
-  //Adiciona o Ponto 'A' (base) à lista se ele não for o ponto de início.
   let pontosFinais = pontosFiltradosPorResiduo;
   if (inicio !== 'A') {
       pontosFinais = [...pontosFinais, 'A'];
@@ -67,12 +134,12 @@ export default function PlanejarRotaScreen() {
   const pontosFiltrados = pontosFinais.filter(p => p !== inicio).sort();
 
 
-  //efeito para limpar a seleção de pontos se eles não estiverem mais na lista filtrada
+  // Correção do ESLint (problema de dependência)
   useEffect(() => {
     setSelecionados(prev => prev.filter(p => pontosFiltrados.includes(p)));
-  }, [tiposSelecionados, inicio]);
+  }, [tiposSelecionados, inicio, pontosFiltrados]); 
 
-
+  
   const marcarPonto = (ponto) => {
     if (!pontosFiltrados.includes(ponto)) return; 
 
@@ -84,12 +151,12 @@ export default function PlanejarRotaScreen() {
     });
   };
 
-  // FUNÇÃO CALCULAR(Vizinho Mais Próximo)
+  // FUNÇÃO CALCULAR(Vizinho Mais Próximo) - ATUALIZADA PARA SALVAR O PLANO
   const calcular = () => {
-    if (selecionados.length === 0) {
+    if (selecionados.length === 0 || loadingDist || Object.keys(distancias).length === 0 || loadingMap) {
         setTotal(0);
         setEtapas([]);
-        navigation.navigate("Ofertas", { filtros: tiposSelecionados });
+        if (loadingDist || loadingMap) Alert.alert("Aguarde", "Carregando dados de roteamento...");
         return;
     }
 
@@ -104,8 +171,8 @@ export default function PlanejarRotaScreen() {
         let menorDistancia = Infinity;
 
         pontosRestantes.forEach(proxPonto => {
-            const dist = distancias[pontoAtual][proxPonto];
-            if (dist < menorDistancia) {
+            const dist = distancias[pontoAtual]?.[proxPonto]; 
+            if (dist !== undefined && dist < menorDistancia) {
                 menorDistancia = dist;
                 vizinhoMaisProximo = proxPonto;
             }
@@ -122,20 +189,36 @@ export default function PlanejarRotaScreen() {
         }
     }
     
+    // Otimização: Voltar para o Ponto de Início
     if (pontoAtual !== inicio) {
-        const distVolta = distancias[pontoAtual][inicio];
-        distanciaTotal += distVolta;
-        etapasTemp.push(`${pontoAtual} → ${inicio} : ${distVolta} km (Volta à Base)`);
-        rotaOtimizada.push(inicio);
+        const distVolta = distancias[pontoAtual]?.[inicio]; 
+        if (distVolta !== undefined) {
+             distanciaTotal += distVolta;
+             etapasTemp.push(`${pontoAtual} → ${inicio} : ${distVolta} km (Volta à Base)`);
+             rotaOtimizada.push(inicio);
+        }
     }
-
 
     setTotal(distanciaTotal);
     setEtapas(etapasTemp);
-  };
+    
+    // NOVO: Salva apenas a sequência de pontos (o plano de rota)
+    salvarPlanoDeRota(rotaOtimizada); 
+};
 
 
   const tema = darkMode ? dark : light;
+
+  // Renderiza tela de loading enquanto carrega as distâncias e o mapa de resíduos
+  if (loadingDist || loadingMap) {
+    return (
+        <SafeAreaView style={[styles.safe, { backgroundColor: tema.bg, justifyContent: 'center', alignItems: 'center' }]}>
+            <ActivityIndicator size="large" color={tema.icon} />
+            <Text style={{ color: tema.text, marginTop: 10 }}>Carregando dados de roteamento...</Text>
+        </SafeAreaView>
+    );
+  }
+
 
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: tema.bg }]}>

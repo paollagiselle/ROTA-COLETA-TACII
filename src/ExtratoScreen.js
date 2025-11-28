@@ -1,38 +1,41 @@
-import React, { useState } from 'react';
-import { SafeAreaView, ScrollView, StyleSheet, Text, View, Pressable } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { 
+  SafeAreaView, ScrollView, StyleSheet, Text, View, Pressable, ActivityIndicator 
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import RotaMapa from './RotaMapa'; // Expo resolve .web.js ou .native.js
+import RotaMapa from './RotaMapa'; 
+import { TIPO_COR_MAP } from './constants/data'; // Importa o mapeamento de cores
+import { supabase } from './supabase'; // Importa a conexão Supabase
 
-// ---- DADOS DE EXEMPLO ----
-const extratoData = [
-  { dia: 'Seg', volume: 8.5,  organico: 5.0,  reciclavel: 3.0, eletronico: 0.5 },
-  { dia: 'Ter', volume: 15.0, organico: 8.0,  reciclavel: 6.0, eletronico: 1.0 },
-  { dia: 'Qua', volume: 5.0,  organico: 3.5,  reciclavel: 1.0, eletronico: 0.5 },
-  { dia: 'Qui', volume: 11.2, organico: 7.0,  reciclavel: 4.0, eletronico: 0.2 },
-  { dia: 'Sex', volume: 18.0, organico: 10.0, reciclavel: 7.0, eletronico: 1.0 },
-  { dia: 'Sáb', volume: 6.8,  organico: 5.0,  reciclavel: 1.5, eletronico: 0.3 },
-  { dia: 'Dom', volume: 2.1,  organico: 1.5,  reciclavel: 0.5, eletronico: 0.1 },
-];
+// ---- LÓGICA DE CÁLCULO DE TOTAIS ----
+const calcularTotais = (data) => {
+  if (!data || data.length === 0) {
+    return {
+      totalSemana: 0,
+      maxVolume: 0,
+      totaisPorTipo: { organico: 0, reciclavel: 0, eletronico: 0 }
+    };
+  }
 
-const totalSemana = extratoData.reduce((sum, d) => sum + d.volume, 0);
-const maxVolume   = Math.max(...extratoData.map(d => d.volume));
+  // CORREÇÃO: Usando a chave correta 'volume_total' vinda do DB
+  const totalSemana = data.reduce((sum, d) => sum + d.volume_total, 0);
+  const maxVolume = Math.max(...data.map(d => d.volume_total));
 
-const totaisPorTipo = extratoData.reduce((acc, d) => ({
-  organico:   acc.organico   + d.organico,
-  reciclavel: acc.reciclavel + d.reciclavel,
-  eletronico: acc.eletronico + d.eletronico,
-}), { organico: 0, reciclavel: 0, eletronico: 0 });
+  // CORREÇÃO: As chaves de tipo (organico, reciclavel, eletronico) estão corretas no DB e no cálculo.
+  const totaisPorTipo = data.reduce((acc, d) => ({
+    organico: acc.organico + d.organico,
+    reciclavel: acc.reciclavel + d.reciclavel,
+    eletronico: acc.eletronico + d.eletronico,
+  }), { organico: 0, reciclavel: 0, eletronico: 0 });
 
-const tipoCor = {
-  'Orgânico':   '#27ae60',
-  'Reciclável': '#f1c40f',
-  'Eletrônico': '#3498db',
+  return { totalSemana, maxVolume, totaisPorTipo };
 };
 
 // ---- COMPONENTE BARRA DO GRÁFICO ----
 const Bar = ({ dia, volume, maxVolume, tema }) => {
   const maxHeight = 150;
-  const height = (volume / maxVolume) * maxHeight;
+  // A verificação `maxVolume > 0` impede divisão por zero ou NaN
+  const height = maxVolume > 0 ? (volume / maxVolume) * maxHeight : 0; 
 
   return (
     <View style={styles.barContainer}>
@@ -54,8 +57,47 @@ const TipoResumoItem = ({ tipo, total, cor, tema }) => (
 
 export default function ExtratoScreen() {
   const [darkMode, setDarkMode] = useState(false);
+  const [extratoData, setExtratoData] = useState([]); 
+  const [loading, setLoading] = useState(true);
 
   const tema = darkMode ? dark : light;
+
+  // Efeito para buscar dados do Supabase
+  useEffect(() => {
+    async function fetchExtrato() {
+      setLoading(true);
+      try {
+        const { data, error } = await supabase
+          .from('extrato_semanal')
+          .select('*')
+          .order('data_registro', { ascending: true }); // Ordena por data
+
+        if (error) throw error;
+        
+        // CORREÇÃO: Os dados do DB são passados diretamente, sem necessidade de mapear as chaves de volume.
+        // O cálculo do total e do gráfico agora usam 'volume_total' e 'dia_semana' diretamente.
+        setExtratoData(data);
+      } catch (error) {
+        console.error('Erro ao buscar extrato:', error.message);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchExtrato();
+  }, []); 
+
+
+  const { totalSemana, maxVolume, totaisPorTipo } = calcularTotais(extratoData);
+
+  if (loading) {
+    return (
+        <SafeAreaView style={[styles.safe, { backgroundColor: tema.bg, justifyContent: 'center', alignItems: 'center' }]}>
+            <ActivityIndicator size="large" color={tema.icon} />
+            <Text style={{ color: tema.subtext, marginTop: 10 }}>Carregando extrato...</Text>
+        </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: tema.bg }]}>
@@ -83,23 +125,29 @@ export default function ExtratoScreen() {
         {/* Gráfico de barras */}
         <View style={[styles.chartArea, { backgroundColor: tema.card, borderColor: tema.border }]}>
           {extratoData.map((d) => (
-            <Bar key={d.dia} dia={d.dia} volume={d.volume} maxVolume={maxVolume} tema={tema} />
+            <Bar 
+              key={d.dia_semana} // Usa a chave correta do DB
+              dia={d.dia_semana} // Usa a chave correta do DB
+              volume={d.volume_total} // Usa a chave correta do DB
+              maxVolume={maxVolume} 
+              tema={tema} 
+            />
           ))}
         </View>
 
         {/* Detalhamento por tipo */}
         <View style={[styles.resumoCard, { backgroundColor: tema.card, borderColor: tema.border }]}>
           <Text style={[styles.resumoTitle, { color: tema.text }]}>Detalhamento por Tipo</Text>
-          <TipoResumoItem tipo="Orgânico"   total={totaisPorTipo.organico}   cor={tipoCor['Orgânico']}   tema={tema} />
-          <TipoResumoItem tipo="Reciclável" total={totaisPorTipo.reciclavel} cor={tipoCor['Reciclável']} tema={tema} />
-          <TipoResumoItem tipo="Eletrônico" total={totaisPorTipo.eletronico} cor={tipoCor['Eletrônico']} tema={tema} />
+          <TipoResumoItem tipo="Orgânico"   total={totaisPorTipo.organico}   cor={TIPO_COR_MAP['Orgânico']}   tema={tema} />
+          <TipoResumoItem tipo="Reciclavel" total={totaisPorTipo.reciclavel} cor={TIPO_COR_MAP['Reciclável']} tema={tema} />
+          <TipoResumoItem tipo="Eletrônico" total={totaisPorTipo.eletronico} cor={TIPO_COR_MAP['Eletrônico']} tema={tema} />
         </View>
       </ScrollView>
     </SafeAreaView>
   );
 }
 
-/* Temas */
+/* Temas e Estilos (Inalterados) */
 const light = {
   bg:     '#f5f6fa',
   card:   '#ffffff',
@@ -107,7 +155,7 @@ const light = {
   subtext:'#636e72',
   border: '#dfe6e9',
   icon:   '#0097e6',
-  accent: '#0097e6',  // barras do gráfico
+  accent: '#0097e6',  
 };
 
 const dark = {
@@ -117,10 +165,9 @@ const dark = {
   subtext:'#b2bec3',
   border: '#3d3d3d',
   icon:   '#ffd32a',
-  accent: '#00c6ff',  // barras no dark
+  accent: '#00c6ff',  
 };
 
-/* Estilos base */
 const styles = StyleSheet.create({
   safe: { flex: 1 },
   container: { padding: 20, alignItems: 'center' },

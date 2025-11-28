@@ -1,10 +1,14 @@
+// app/index.js (Bloco atualizado)
+
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
+// Importa a nova tela
 import PlanejarRotaScreen from '../src/PlanejarRotaScreen'; 
 import OfertasScreen from '../src/OfertasScreen'; 
 import ExtratoScreen from '../src/ExtratoScreen'; 
+import ExecucaoScreen from '../src/ExecucaoScreen'; // NOVO IMPORT
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -22,6 +26,8 @@ function HomeTabs() {
             iconName = focused ? 'home' : 'home-outline';
           } else if (route.name === 'Planejar Rota') {
             iconName = focused ? 'map' : 'map-outline';
+          } else if (route.name === 'Coleta') { // NOVO ICON
+            iconName = focused ? 'navigate-circle' : 'navigate-circle-outline';
           } else if (route.name === 'Extrato') {
             iconName = focused ? 'bar-chart' : 'bar-chart-outline';
           }
@@ -43,6 +49,11 @@ function HomeTabs() {
         name="Planejar Rota" 
         component={PlanejarRotaScreen} 
         options={{ title: 'Rota' }} 
+      />
+      <Tab.Screen 
+        name="Coleta" // NOVA ABA
+        component={ExecucaoScreen} 
+        options={{ title: 'Coleta' }} 
       />
       <Tab.Screen 
         name="Extrato" 
