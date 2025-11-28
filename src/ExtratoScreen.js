@@ -4,8 +4,8 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import RotaMapa from './RotaMapa'; 
-import { TIPO_COR_MAP } from './constants/data'; // Importa o mapeamento de cores
-import { supabase } from './supabase'; // Importa a conexão Supabase
+import { TIPO_COR_MAP } from './constants/data'; 
+import { supabase } from './supabase'; 
 
 // ---- LÓGICA DE CÁLCULO DE TOTAIS ----
 const calcularTotais = (data) => {
@@ -17,11 +17,9 @@ const calcularTotais = (data) => {
     };
   }
 
-  // CORREÇÃO: Usando a chave correta 'volume_total' vinda do DB
   const totalSemana = data.reduce((sum, d) => sum + d.volume_total, 0);
   const maxVolume = Math.max(...data.map(d => d.volume_total));
 
-  // CORREÇÃO: As chaves de tipo (organico, reciclavel, eletronico) estão corretas no DB e no cálculo.
   const totaisPorTipo = data.reduce((acc, d) => ({
     organico: acc.organico + d.organico,
     reciclavel: acc.reciclavel + d.reciclavel,
@@ -34,7 +32,6 @@ const calcularTotais = (data) => {
 // ---- COMPONENTE BARRA DO GRÁFICO ----
 const Bar = ({ dia, volume, maxVolume, tema }) => {
   const maxHeight = 150;
-  // A verificação `maxVolume > 0` impede divisão por zero ou NaN
   const height = maxVolume > 0 ? (volume / maxVolume) * maxHeight : 0; 
 
   return (
@@ -74,8 +71,6 @@ export default function ExtratoScreen() {
 
         if (error) throw error;
         
-        // CORREÇÃO: Os dados do DB são passados diretamente, sem necessidade de mapear as chaves de volume.
-        // O cálculo do total e do gráfico agora usam 'volume_total' e 'dia_semana' diretamente.
         setExtratoData(data);
       } catch (error) {
         console.error('Erro ao buscar extrato:', error.message);
@@ -126,9 +121,9 @@ export default function ExtratoScreen() {
         <View style={[styles.chartArea, { backgroundColor: tema.card, borderColor: tema.border }]}>
           {extratoData.map((d) => (
             <Bar 
-              key={d.dia_semana} // Usa a chave correta do DB
-              dia={d.dia_semana} // Usa a chave correta do DB
-              volume={d.volume_total} // Usa a chave correta do DB
+              key={d.dia_semana} 
+              dia={d.dia_semana} 
+              volume={d.volume_total} 
               maxVolume={maxVolume} 
               tema={tema} 
             />
@@ -147,7 +142,6 @@ export default function ExtratoScreen() {
   );
 }
 
-/* Temas e Estilos (Inalterados) */
 const light = {
   bg:     '#f5f6fa',
   card:   '#ffffff',

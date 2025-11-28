@@ -17,7 +17,6 @@ export default function RotaMapa() {
 
             if (error) throw error;
 
-            // Transforma o array de objetos do DB em um objeto de mapeamento { 'A': {lat, lon, title}, ... }
             const coordenadasMapeadas = {};
             data.forEach(item => {
                 coordenadasMapeadas[item.ponto] = {
@@ -37,14 +36,11 @@ export default function RotaMapa() {
     fetchCoordenadas();
   }, []); 
 
-  // Simulação de Rota (Ainda estático, mas usando os dados dinâmicos)
-  // Para que a linha seja desenhada, a rota precisa ser um array de objetos de coordenadas.
   const rotaSimuladaKeys = ['A', 'D', 'C', 'E'];
   const rotaSimulada = rotaSimuladaKeys
     .map(key => pontosColeta[key])
     .filter(point => point !== undefined); // Filtra para garantir que o ponto exista
 
-  // Se ainda estiver carregando, mostra o indicador
   if (loading || Object.keys(pontosColeta).length === 0) {
     return (
         <View style={styles.container}>
@@ -82,7 +78,6 @@ export default function RotaMapa() {
           );
         })}
 
-        {/* Desenhar a Polilinha (Rota Realizada) */}
         {rotaSimulada.length > 1 && (
             <Polyline
               coordinates={rotaSimulada}
@@ -108,7 +103,7 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
     elevation: 3,
     marginBottom: 20,
-    justifyContent: 'center', // Centraliza o loading
+    justifyContent: 'center', 
   },
   map: {
     ...StyleSheet.absoluteFillObject,

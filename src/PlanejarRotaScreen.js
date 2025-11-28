@@ -17,7 +17,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { PONTOS_MAPA_RESIDUOS } from "./constants/data"; 
 import { supabase } from './supabase'; 
-import AsyncStorage from '@react-native-async-storage/async-storage'; // NOVO IMPORT
+import AsyncStorage from '@react-native-async-storage/async-storage'; 
 
 // Chave para salvar o plano de rota
 const ASYNC_STORAGE_ROUTE_KEY = '@rotaOtimizadaPlano'; 
@@ -134,7 +134,6 @@ export default function PlanejarRotaScreen() {
   const pontosFiltrados = pontosFinais.filter(p => p !== inicio).sort();
 
 
-  // Correção do ESLint (problema de dependência)
   useEffect(() => {
     setSelecionados(prev => prev.filter(p => pontosFiltrados.includes(p)));
   }, [tiposSelecionados, inicio, pontosFiltrados]); 
@@ -151,7 +150,7 @@ export default function PlanejarRotaScreen() {
     });
   };
 
-  // FUNÇÃO CALCULAR(Vizinho Mais Próximo) - ATUALIZADA PARA SALVAR O PLANO
+  // FUNÇÃO CALCULAR(Vizinho Mais Próximo) - ATUALIZADA PARA SALVAR
   const calcular = () => {
     if (selecionados.length === 0 || loadingDist || Object.keys(distancias).length === 0 || loadingMap) {
         setTotal(0);
@@ -189,7 +188,6 @@ export default function PlanejarRotaScreen() {
         }
     }
     
-    // Otimização: Voltar para o Ponto de Início
     if (pontoAtual !== inicio) {
         const distVolta = distancias[pontoAtual]?.[inicio]; 
         if (distVolta !== undefined) {
@@ -202,14 +200,12 @@ export default function PlanejarRotaScreen() {
     setTotal(distanciaTotal);
     setEtapas(etapasTemp);
     
-    // NOVO: Salva apenas a sequência de pontos (o plano de rota)
     salvarPlanoDeRota(rotaOtimizada); 
 };
 
 
   const tema = darkMode ? dark : light;
 
-  // Renderiza tela de loading enquanto carrega as distâncias e o mapa de resíduos
   if (loadingDist || loadingMap) {
     return (
         <SafeAreaView style={[styles.safe, { backgroundColor: tema.bg, justifyContent: 'center', alignItems: 'center' }]}>

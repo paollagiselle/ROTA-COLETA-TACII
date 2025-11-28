@@ -12,12 +12,11 @@ import { Ionicons } from "@expo/vector-icons";
 import { supabase } from './supabase'; 
 import { TIPO_COR_MAP, TIPOS_RESIDUOS } from './constants/data'; 
 
-// NOVO: Função para normalizar strings (remove acentos e converte para minúsculas)
 const normalizeString = (str) => {
   return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 }
 
-// Componente para renderizar um item da lista (inalterado)
+// Componente para renderizar um item da lista
 const OfertaItem = ({ item, tema }) => (
     <View style={[styles.itemCard, { backgroundColor: tema.card }]}>
       <View style={[styles.pontoTag, { backgroundColor: TIPO_COR_MAP[item.tipo_residuo] || '#95a5a6' }]}>
@@ -32,15 +31,15 @@ const OfertaItem = ({ item, tema }) => (
     </View>
 );
 
-// NOVO: Componente para os Botões de Filtro (Melhorado)
+// Componente para os Botões de Filtro
 const FiltroTipo = ({ tema, filtroAtivo, onToggle }) => (
     <View style={styles.filtroContainer}>
         {Object.entries(TIPOS_RESIDUOS).map(([key, data]) => {
-            const isActive = filtroAtivo[data.label]; // Usa o RÓTULO (Ex: 'Orgânico') como chave de estado
+            const isActive = filtroAtivo[data.label];
             return (
                 <Pressable
                     key={key}
-                    onPress={() => onToggle(data.label)} // Passa o RÓTULO para o toggle
+                    onPress={() => onToggle(data.label)} 
                     style={[
                         styles.filtroButton,
                         { borderColor: data.cor, backgroundColor: isActive ? data.cor : tema.card }
@@ -63,12 +62,11 @@ export default function OfertasScreen() {
   const [darkMode, setDarkMode] = useState(false);
   const [ofertas, setOfertas] = useState([]); 
   const [loading, setLoading] = useState(true); 
-  // ESTADO DO FILTRO: Agora armazena o RÓTULO do filtro ativo (Ex: {'Reciclável': true})
   const [filtrosAtivos, setFiltrosAtivos] = useState({}); 
 
   const tema = darkMode ? darkTheme : lightTheme;
 
-  // Função para buscar dados do Supabase (inalterada)
+  // Função para buscar dados do Supabase
   useEffect(() => {
     async function fetchOfertas() {
       setLoading(true);
@@ -93,12 +91,11 @@ export default function OfertasScreen() {
     fetchOfertas();
   }, []); 
 
-  // NOVO: Lógica de Filtragem (LOCAL) - Usa useMemo para performance e normalização
+  // Lógica de Filtragem 
   const ofertasFiltradas = useMemo(() => {
-    // 1. Obtém a lista normalizada (sem acento, minúsculo) dos filtros ATIVOS
     const tiposAtivosNormalizados = Object.keys(filtrosAtivos)
         .filter(label => filtrosAtivos[label]) // Filtra apenas os que são TRUE
-        .map(label => normalizeString(label)); // Normaliza o nome (ex: 'reciclavel')
+        .map(label => normalizeString(label)); 
     
     // 2. Se nenhum filtro estiver ativo, exibe todas as ofertas
     if (tiposAtivosNormalizados.length === 0) {
@@ -107,17 +104,14 @@ export default function OfertasScreen() {
 
     // 3. Filtra a lista de ofertas
     return ofertas.filter(oferta => {
-        // Normaliza o tipo de resíduo do DB (Ex: 'reciclavel')
         const tipoResiduoNormalizado = normalizeString(oferta.tipo_residuo);
         
-        // Verifica se o tipo do resíduo (normalizado) está na lista de filtros ativos (normalizados)
         return tiposAtivosNormalizados.includes(tipoResiduoNormalizado);
     });
 
-  }, [ofertas, filtrosAtivos]); // Recalcula apenas se os dados ou os filtros mudarem
+  }, [ofertas, filtrosAtivos]); 
 
 
-  // Função para alternar o estado do filtro (usando o RÓTULO como chave)
   const handleToggleFiltro = (label) => {
     setFiltrosAtivos(prev => ({
         ...prev,
@@ -126,7 +120,6 @@ export default function OfertasScreen() {
   };
 
 
-  // Renderiza a tela de carregamento (inalterada)
   if (loading) {
     return (
         <SafeAreaView style={[styles.safe, { backgroundColor: tema.bg, justifyContent: 'center', alignItems: 'center' }]}>
@@ -156,7 +149,7 @@ export default function OfertasScreen() {
         </Pressable>
       </View>
 
-      {/* NOVO: Componente de Filtro */}
+      {/* Componente de Filtro */}
       <FiltroTipo 
           tema={tema}
           filtroAtivo={filtrosAtivos}
@@ -164,7 +157,7 @@ export default function OfertasScreen() {
       />
 
       <FlatList
-        data={ofertasFiltradas} // AGORA USA A LISTA FILTRADA
+        data={ofertasFiltradas} 
         keyExtractor={(item) => String(item.id)}
         renderItem={({ item }) => <OfertaItem item={item} tema={tema} />}
         contentContainerStyle={styles.listContainer}
@@ -178,7 +171,7 @@ export default function OfertasScreen() {
   );
 }
 
-// Temas e Estilos (inalterados)
+// Temas e Estilos
 const lightTheme = {
   bg: "#f5f6fa",
   card: "#ffffff",

@@ -1,14 +1,11 @@
-// app/index.js (Bloco atualizado)
-
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
-// Importa a nova tela
 import PlanejarRotaScreen from '../src/PlanejarRotaScreen'; 
 import OfertasScreen from '../src/OfertasScreen'; 
 import ExtratoScreen from '../src/ExtratoScreen'; 
-import ExecucaoScreen from '../src/ExecucaoScreen'; // NOVO IMPORT
+import ExecucaoScreen from '../src/ExecucaoScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();

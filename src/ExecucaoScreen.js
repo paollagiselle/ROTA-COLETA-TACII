@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from './supabase'; 
-import AsyncStorage from '@react-native-async-storage/async-storage'; // NOVO IMPORT
+import AsyncStorage from '@react-native-async-storage/async-storage'; 
 
 // Chaves para carregar o plano de rota
 const ASYNC_STORAGE_ROUTE_KEY = '@rotaOtimizadaPlano'; 
@@ -21,13 +21,12 @@ const ASYNC_STORAGE_CURRENT_INDEX = '@rotaIndexAtual';
 export default function ExecucaoScreen() {
     const [darkMode, setDarkMode] = useState(false);
     const [loading, setLoading] = useState(true);
-    const [planoRota, setPlanoRota] = useState([]); // A Rota Otimizada (Ex: ['A', 'D', 'C', 'E', 'A'])
-    const [currentIndex, setCurrentIndex] = useState(0); // Onde estamos na rota (índice)
-    const [coordenadasPontos, setCoordenadasPontos] = useState({}); // Coordenadas do DB
+    const [planoRota, setPlanoRota] = useState([]); 
+    const [currentIndex, setCurrentIndex] = useState(0); 
+    const [coordenadasPontos, setCoordenadasPontos] = useState({}); 
 
     const tema = darkMode ? darkTheme : lightTheme;
 
-    // EFEITO PARA CARREGAR DADOS NA MONTAGEM: Rota e Coordenadas
     useEffect(() => {
         async function loadData() {
             setLoading(true);
@@ -111,14 +110,12 @@ export default function ExecucaoScreen() {
         }
     };
 
-    // FUNÇÃO DE NAVEGAÇÃO EXTERNA (Deep Link)
     const handleNavigate = () => {
         if (!nextPointKey || !coordenadasPontos[nextPointKey]) {
             Alert.alert("Erro", "Coordenadas do próximo ponto não encontradas.");
             return;
         }
         const { lat, lon } = coordenadasPontos[nextPointKey];
-        // Formato para abrir o Google Maps/Waze: latitude,longitude
         const url = `http://maps.google.com/maps?daddr=${lat},${lon}`;
         Linking.openURL(url);
     };
