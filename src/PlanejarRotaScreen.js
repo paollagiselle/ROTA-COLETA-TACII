@@ -136,7 +136,7 @@ export default function PlanejarRotaScreen() {
 
   useEffect(() => {
     setSelecionados(prev => prev.filter(p => pontosFiltrados.includes(p)));
-  }, [tiposSelecionados, inicio, pontosFiltrados]); 
+  }, [tiposSelecionados, inicio]); 
 
   
   const marcarPonto = (ponto) => {
